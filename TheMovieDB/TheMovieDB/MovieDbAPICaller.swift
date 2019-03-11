@@ -34,6 +34,8 @@ class MovieDbAPICaller {
         var images: Images
     }
     
+    static var configs: ConfigResponse?
+    
     struct MovieListResponse : Codable {
         var page: Int
         var results: [Movie]
@@ -45,7 +47,6 @@ class MovieDbAPICaller {
     static let API_KEY = "1f4d7de5836b788bdfd897c3e0d0a24b"
     static let BASE_URL = "https://api.themoviedb.org/3/"
     
-    static var configs: ConfigResponse?
     
     /*func URLSessionRequest(){
         var request = URLRequest(url: NSURL(string: "\(MovieDbAPICaller.url)discover/movie?page=1&include_video=false&include_adult=false&sort_by:popularity.desc&language=en-US&api_key=\(apiKey)")! as URL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
@@ -86,6 +87,7 @@ class MovieDbAPICaller {
             do {
                 completionHandler(try JSONDecoder().decode(MovieListResponse.self, from: response.data ?? Data()), nil)
             } catch let error {
+                print("MovieDbAPICaller.getMovieList -> \(try! JSONSerialization.jsonObject(with: response.data!, options: []))")
                 completionHandler(nil, error)
             }
         }

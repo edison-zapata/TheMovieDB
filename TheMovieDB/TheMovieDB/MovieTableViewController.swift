@@ -35,26 +35,30 @@ class MovieTableViewController: UITableViewController {
         if(indexPath.row == movies.count - 2){
             requestMovies(pageID: (movies.count / 20) + 1)
         }
-        
-        
         // Table view cells are reused and should be dequeued using a cell identifier.
         let cellIdentifier = "MovieTableViewCell"
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? MovieTableViewCell else{
             fatalError("The dequeued cell is not an instance of MovieTableViewCell.")
         }
         
-        // Fetches the appropriate meal for the data source layout.
+        // Fetches the appropriate movie for the data source layout.
         let movie = movies[indexPath.row]
         cell.titleLabel.text = movie.title
         cell.overviewLabel.text = movie.overview
-        guard let imageConfigs = MovieDbAPICaller.configs else {
-            return cell
+        if let posterData = movie.posterImageData {
+            //If the image is already in the Movie object don't call again
+            cell.posterImage.image = UIImage(data: posterData)
+        }else{
+            guard let imageConfigs = MovieDbAPICaller.configs,
+            let posterPath = movie.poster else {
+                return cell
+            }
+            MovieDbAPICaller.getMoviePoster(imageSize: imageConfigs.images.posterSizes[0], imagePath: posterPath){
+                data in
+                movie.posterImageData = data
+                cell.posterImage.image = UIImage(data: data)
+            }
         }
-        MovieDbAPICaller.getMoviePoster(imageSize: imageConfigs.images.posterSizes[0], imagePath: movie.poster){
-            data in
-            cell.posterImage.image = UIImage(data: data)
-        }
-
         return cell
     }
 
@@ -107,7 +111,7 @@ class MovieTableViewController: UITableViewController {
         MovieDbAPICaller.getMovieList(pageID: pageID){
             movieListResponse, error in
             guard let movieResponse = movieListResponse else{
-                print(error as Any)
+                print("MovieTableViewController.requestMovies -> \(error as Any)")
                 return
             }
             self.movies += movieResponse.results

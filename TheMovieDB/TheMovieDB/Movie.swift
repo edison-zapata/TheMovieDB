@@ -16,13 +16,14 @@ struct Genre : Codable{
 class Movie : Codable, CustomStringConvertible {
     
     var description: String {
-        return "Title: \(title)\nPoster: \(poster)\nOverview: \(overview)\n"
+        return "Title: \(title)\nPoster: \(String(describing: poster))\nOverview: \(overview)\n"
     }
     
     var id: Int
     var title: String
     var overview: String
-    var poster: String
+    var poster: String?
+    var posterImageData: Data?
     var adult: Bool?
     var genres: [Genre]?
     

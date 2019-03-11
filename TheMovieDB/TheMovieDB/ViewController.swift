@@ -18,7 +18,6 @@ class ViewController: UIViewController {
                 print($1 as Any)
                 return
             }
-            print(movieListResp.results[0])
         }
     }
 
