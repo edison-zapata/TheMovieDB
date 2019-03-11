@@ -43,4 +43,13 @@ class Movie : Codable, CustomStringConvertible {
         self.overview = overview
     }
     
+    
+    lazy var asString: () -> String = {
+        return "Title: \(self.title)\nPoster: \(self.poster)\nOverview: \(self.overview)\n"
+    }
+    
+    /*func asString() -> String{
+        return "Title: \(self.title)\nPoster: \(self.poster)\nOverview: \(self.overview)\n"
+    }*/
+    
 }

@@ -8,27 +8,24 @@
 
 import UIKit
 import Foundation
-import Alamofire
 
 class ViewController: UIViewController {
-    
-    private func printMovieList(movieList: MovieDbAPICaller.MovieListResponse){
-        print(movieList.results.first)
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let movieDbCaller = MovieDbAPICaller()
-        movieDbCaller.getMovieList(pageID: 1, completionHandler: printMovieList)
+        MovieDbAPICaller.getMovieList(pageID: 1){
+            guard let movieListResp = $0 else {
+                print($1 as Any)
+                return
+            }
+            print(movieListResp.results[0])
+        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    
-
 
 }
 

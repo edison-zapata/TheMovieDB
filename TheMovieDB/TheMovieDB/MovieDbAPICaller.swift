@@ -11,9 +11,28 @@ import Alamofire
 
 class MovieDbAPICaller {
     
-    let apiKey = "1f4d7de5836b788bdfd897c3e0d0a24b"
-    let url = "https://api.themoviedb.org/3/"
-    let postData = NSData(data: "{}".data(using: String.Encoding.utf8)!)
+    class ConfigResponse : Codable {
+        struct Images : Codable {
+            var baseURL: String
+            var secureBaseURL: String
+            var backdropSizes: [String]
+            var logoSizes: [String]
+            var posterSizes: [String]
+            var profileSizes: [String]
+            var stillSizes: [String]
+            enum CodingKeys : String, CodingKey{
+                case baseURL = "base_url"
+                case secureBaseURL = "secure_base_url"
+                case backdropSizes = "backdrop_sizes"
+                case logoSizes = "logo_sizes"
+                case posterSizes = "poster_sizes"
+                case profileSizes = "profile_sizes"
+                case stillSizes = "still_sizes"
+                
+            }
+        }
+        var images: Images
+    }
     
     struct MovieListResponse : Codable {
         var page: Int
@@ -22,8 +41,14 @@ class MovieDbAPICaller {
         var total_results: Int
     }
     
-    func URLSessionRequest(){
-        var request = URLRequest(url: NSURL(string: "\(url)discover/movie?page=1&include_video=false&include_adult=false&sort_by:popularity.desc&language=en-US&api_key=\(apiKey)")! as URL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
+    
+    static let API_KEY = "1f4d7de5836b788bdfd897c3e0d0a24b"
+    static let BASE_URL = "https://api.themoviedb.org/3/"
+    
+    static var configs: ConfigResponse?
+    
+    /*func URLSessionRequest(){
+        var request = URLRequest(url: NSURL(string: "\(MovieDbAPICaller.url)discover/movie?page=1&include_video=false&include_adult=false&sort_by:popularity.desc&language=en-US&api_key=\(apiKey)")! as URL, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
         request.httpMethod = "GET"
         request.httpBody = self.postData as Data
         
@@ -42,32 +67,50 @@ class MovieDbAPICaller {
         })
         
         dataTask.resume()
-    }
-    
-    /*private func movieListRequestHandler(response: DataResponse<Any>){
-        
     }*/
     
-    public func getMovieList(pageID: Int, completionHandler: @escaping (MovieListResponse) -> Void){
-        print("Sending requiest")
-        Alamofire.request("\(url)discover/movie?page=\(pageID)&sort_by:popularity.des&api_key=\(apiKey)").responseJSON{ response in
+    static func getConfigs(){
+        Alamofire.request("\(BASE_URL)configuration?api_key=\(API_KEY)").responseJSON {
+            response in
             do {
-                completionHandler(try JSONDecoder().decode(MovieListResponse.self, from: response.data ?? self.postData as Data))
-            } catch let error {
-                print (error)
-                return
+                configs = try JSONDecoder().decode(ConfigResponse.self, from: response.data ?? Data())
+            }catch let error {
+                print(error)
             }
         }
-        print("Request send")
     }
     
-    public func getMovieDetails(movieID: Int, completionHandler: @escaping (Movie) -> Void){
-        Alamofire.request("\(url)movie/\(movieID)?api_key=\(apiKey)").responseData { data in
+    static func getMovieList(pageID: Int, completionHandler: @escaping (MovieListResponse?, Error?) -> Void){
+        Alamofire.request("\(BASE_URL)discover/movie?page=\(pageID)&sort_by:popularity.des&api_key=\(API_KEY)").responseJSON{
+            response in
+            do {
+                completionHandler(try JSONDecoder().decode(MovieListResponse.self, from: response.data ?? Data()), nil)
+            } catch let error {
+                completionHandler(nil, error)
+            }
+        }
+    }
+    
+    static func getMovieDetails(movieID: Int, completionHandler: @escaping (Movie) -> Void){
+        Alamofire.request("\(BASE_URL)movie/\(movieID)?api_key=\(API_KEY)").responseData { data in
             do{
                 completionHandler(try JSONDecoder().decode(Movie.self, from: data.data!))
             }catch let error{
                 print(error)
             }
+        }
+    }
+    
+    static func getMoviePoster(imageSize: String, imagePath: String, completionHandler: @escaping (Data)->Void){
+        guard  let baseUrl = configs?.images.secureBaseURL else {
+            return
+        }
+        Alamofire.request("\(baseUrl)\(imageSize)/\(imagePath)").responseData{
+            data in
+            guard let response = data.data else{
+                return
+            }
+            completionHandler(response)
         }
     }
 }
