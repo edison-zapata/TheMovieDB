@@ -12,16 +12,21 @@ class MovieTableViewController: UITableViewController {
     
     //MARK: Properties
     var movies = [Movie]()
+    let cellIdentifier = "MovieTableViewCell"
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Register cell
+        tableView.register(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
         //Get the movies
         requestMovies(pageID: 1)
     }
 
     // MARK: - Table view data source
-
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -36,11 +41,9 @@ class MovieTableViewController: UITableViewController {
             requestMovies(pageID: (movies.count / 20) + 1)
         }
         // Table view cells are reused and should be dequeued using a cell identifier.
-        let cellIdentifier = "MovieTableViewCell"
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? MovieTableViewCell else{
             fatalError("The dequeued cell is not an instance of MovieTableViewCell.")
         }
-        
         // Fetches the appropriate movie for the data source layout.
         let movie = movies[indexPath.row]
         cell.titleLabel.text = movie.title
