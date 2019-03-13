@@ -107,7 +107,7 @@ class MovieDbAPICaller {
         guard  let baseUrl = configs?.images.secureBaseURL else {
             return
         }
-        Alamofire.request("\(baseUrl)\(imageSize)/\(imagePath)").responseData{
+        Alamofire.request("\(baseUrl)\(imageSize)\(imagePath)").responseData{
             data in
             guard let response = data.data else{
                 return
